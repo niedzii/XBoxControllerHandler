@@ -8,85 +8,46 @@
 import pygame
 import sys
 
+from Platform import Platform
+
 LINUX = 0
-MAC = 1
 WINDOWS = 2
 
 if sys.platform.startswith("lin"):
-    platform_id = LINUX
-elif sys.platform.startswith("darwin"):
-    platform_id = MAC
+    platform = Platform.LINUX
 elif sys.platform.startswith("win"):
-    platform_id = WINDOWS
+    platform = Platform.WINDOWS
 
-if platform_id == LINUX:
-    # buttons
-    A = 0
-    B = 1
-    X = 2
-    Y = 3
-    LEFT_BUMP = 4
-    RIGHT_BUMP = 5
-    BACK = 6
-    START = 7
-    # GUIDE = 8
+A = 0
+B = 1
+X = 2
+Y = 3
+LEFT_BUMP = 4
+RIGHT_BUMP = 5
+BACK = 6
+START = 7
+LEFT_STICK_X = 0
+LEFT_STICK_Y = 1
+
+if platform == Platform.LINUX:
     LEFT_STICK_BTN = 9
     RIGHT_STICK_BTN = 10
 
     # axes
-    LEFT_STICK_X = 0
-    LEFT_STICK_Y = 1
     RIGHT_STICK_X = 3
     RIGHT_STICK_Y = 4
     LEFT_TRIGGER = 2
     RIGHT_TRIGGER = 5
 
-elif platform_id == WINDOWS:
+elif platform == Platform.WINDOWS:
     # buttons
-    A = 0
-    B = 1
-    X = 2
-    Y = 3
-    LEFT_BUMP = 4
-    RIGHT_BUMP = 5
-    BACK = 6
-    START = 7
     LEFT_STICK_BTN = 8
     RIGHT_STICK_BTN = 9
 
     # axes
-    LEFT_STICK_X = 0
-    LEFT_STICK_Y = 1
     RIGHT_STICK_X = 4
     RIGHT_STICK_Y = 3
     TRIGGERS = 2
-
-elif platform_id == MAC:
-    # buttons
-    A = 11
-    B = 12
-    X = 13
-    Y = 14
-    LEFT_BUMP = 8
-    RIGHT_BUMP = 9
-    BACK = 5
-    START = 4
-    LEFT_STICK_BTN = 6
-    RIGHT_STICK_BTN = 7
-
-    # d-pad
-    PAD_UP = 0
-    PAD_DOWN = 1
-    PAD_LEFT = 2
-    PAD_RIGHT = 3
-
-    # axes
-    LEFT_STICK_X = 0
-    LEFT_STICK_Y = 1
-    RIGHT_STICK_X = 2
-    RIGHT_STICK_Y = 3
-    LEFT_TRIGGER = 4
-    RIGHT_TRIGGER = 5
 
 
 class Controller:
@@ -146,8 +107,7 @@ class Controller:
             A tuple with the state of each button. 1 is pressed, 0 is unpressed.
         """
 
-        print(platform_id)
-        if platform_id == LINUX:
+        if platform == Platform.LINUX:
             return (self.joystick.get_button(A),
                     self.joystick.get_button(B),
                     self.joystick.get_button(X),
@@ -160,7 +120,7 @@ class Controller:
                     self.joystick.get_button(LEFT_STICK_BTN),
                     self.joystick.get_button(RIGHT_STICK_BTN))
 
-        elif platform_id == WINDOWS:
+        elif platform == Platform.WINDOWS:
             return (self.joystick.get_button(A),
                     self.joystick.get_button(B),
                     self.joystick.get_button(X),
@@ -174,23 +134,6 @@ class Controller:
                     self.joystick.get_button(8),
                     self.joystick.get_button(11),
                     self.joystick.get_button(12))
-
-        elif platform_id == MAC:
-            return (0,  # Unused
-                    0,  # Unused
-                    0,  # Unused
-                    0,  # Unused
-                    self.joystick.get_button(START),
-                    self.joystick.get_button(BACK),
-                    self.joystick.get_button(LEFT_STICK_BTN),
-                    self.joystick.get_button(RIGHT_STICK_BTN),
-                    self.joystick.get_button(LEFT_BUMP),
-                    self.joystick.get_button(RIGHT_BUMP),
-                    0,  # Unused
-                    self.joystick.get_button(A),
-                    self.joystick.get_button(B),
-                    self.joystick.get_button(X),
-                    self.joystick.get_button(Y))
 
     def get_left_stick(self):
         """
@@ -208,7 +151,7 @@ class Controller:
         left_stick_x = self.dead_zone_adjustment(self.joystick.get_axis(LEFT_STICK_X))
         left_stick_y = self.dead_zone_adjustment(self.joystick.get_axis(LEFT_STICK_Y))
 
-        return (left_stick_x, left_stick_y)
+        return left_stick_x, left_stick_y
 
     def get_right_stick(self):
         """
@@ -226,7 +169,7 @@ class Controller:
         right_stick_x = self.dead_zone_adjustment(self.joystick.get_axis(RIGHT_STICK_X))
         right_stick_y = self.dead_zone_adjustment(self.joystick.get_axis(RIGHT_STICK_Y))
 
-        return (right_stick_x, right_stick_y)
+        return right_stick_x, right_stick_y
 
     def get_triggers(self):
         """
@@ -269,7 +212,7 @@ class Controller:
 
             trigger_axis = (-1 * left + right) / 2
 
-        elif platform_id == WINDOWS:
+        elif platform == Platform.WINDOWS:
             trigger_axis = -1 * self.joystick.get_axis(TRIGGERS)
 
         return trigger_axis
@@ -284,18 +227,11 @@ class Controller:
             to have up to two 1s in the returned tuple.
         """
 
-        if platform_id == LINUX or platform_id == WINDOWS:
-            hat_x, hat_y = self.joystick.get_hat(0)
+        hat_x, hat_y = self.joystick.get_hat(0)
 
-            up = int(hat_y == 1)
-            right = int(hat_x == 1)
-            down = int(hat_y == -1)
-            left = int(hat_x == -1)
-
-        elif platform_id == MAC:
-            up = self.joystick.get_button(PAD_UP)
-            right = self.joystick.get_button(PAD_RIGHT)
-            down = self.joystick.get_button(PAD_DOWN)
-            left = self.joystick.get_button(PAD_LEFT)
+        up = int(hat_y == 1)
+        right = int(hat_x == 1)
+        down = int(hat_y == -1)
+        left = int(hat_x == -1)
 
         return up, right, down, left

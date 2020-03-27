@@ -2,6 +2,7 @@ import pygame
 from pygame.event import Event
 
 import xbox360_controller
+from Button import Button
 
 WINDOW_X = 100
 WINDOW_Y = 100
@@ -14,16 +15,16 @@ screen = pygame.display.set_mode(windowSize)
 controller = xbox360_controller.Controller()
 
 buttons = {
-    0: "A",
-    1: "B",
-    2: "X",
-    3: "Y",
-    4: "LEFT_BUMP",
-    5: "RIGHT_BUMP",
-    6: "BACK",
-    7: "START",
-    8: "LEFT_STICK_BTN",
-    9: "RIGHT_STICK_BTN"
+    0: Button.A,
+    1: Button.B,
+    2: Button.X,
+    3: Button.Y,
+    4: Button.LEFT_BUMP,
+    5: Button.RIGHT_BUMP,
+    6: Button.BACK,
+    7: Button.START,
+    8: Button.LEFT_STICK_BTN,
+    9: Button.RIGHT_STICK_BTN
 }
 
 hats = {
