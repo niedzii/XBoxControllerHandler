@@ -1,11 +1,16 @@
+import time, threading
+
 import pygame
 from pygame.event import Event
 
 import xbox360_controller
 from Button import Button
+from Hat import Hat
 
 WINDOW_X = 100
 WINDOW_Y = 100
+
+LAST_TRIGGER_TIME = 0
 
 pygame.init()
 
@@ -28,10 +33,10 @@ buttons = {
 }
 
 hats = {
-    (-1, 0): "LEFT",
-    (0, -1): "DOWN",
-    (1, 0): "RIGHT",
-    (0, 1): "UP"
+    (-1, 0): Hat.LEFT,
+    (0, -1): Hat.DOWN,
+    (1, 0): Hat.RIGHT,
+    (0, 1): Hat.UP
 }
 
 
@@ -44,18 +49,27 @@ def matchToHat(input: int):
 
 
 def handleButton(event: Event):
-        print(matchToButton(event.button))
+    print(matchToButton(event.button))
 
 
 def handleHat(event: Event):
-        value = matchToHat(event.value)
-        if value != None:
-            print(value)
+    value = matchToHat(event.value)
+    if value != None:
+        print(value)
 
 
+def handleAxis():
+    print(controller.get_triggers())
+
+
+
+def scheduleTriggerScan():
+    handleAxis()
+    threading.Timer(0.25, scheduleTriggerScan).start()
+
+scheduleTriggerScan()
 while True:
     for event in pygame.event.get():
-
         if event.type == pygame.JOYBUTTONDOWN:
             handleButton(event)
 

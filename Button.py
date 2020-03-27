@@ -11,4 +11,4 @@ class Button(Enum):
     BACK = 6
     START = 7
     LEFT_STICK_BTN = 8
-    RIGHT_STICK_BT = 9
+    RIGHT_STICK_BTN = 9

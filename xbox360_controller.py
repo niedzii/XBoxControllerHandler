@@ -1,14 +1,10 @@
-#  Copyright (c) 2017 Jon Cooper
-#
-#  This file is part of pygame-xbox360controller.
-#  Documentation, related files, and licensing can be found at
-#
-#      <https://github.com/joncoop/pygame-xbox360controller>.
-
 import pygame
 import sys
 
 from Platform import Platform
+
+MAX_POSITIVE_VALUE = 0.99609375
+MAX_NEGATIVE_VALUE = -0.99609375
 
 LINUX = 0
 WINDOWS = 2
@@ -18,7 +14,7 @@ if sys.platform.startswith("lin"):
 elif sys.platform.startswith("win"):
     platform = Platform.WINDOWS
 
-A = 0
+A = 1000
 B = 1
 X = 2
 Y = 3
@@ -72,19 +68,11 @@ class Controller:
 
         Controller.id_num += 1
 
-    def get_id(self):
-        """
-        Returns:
-            The ID of the controller.
-        """
-
-        return self.joystick.get_id()
-
     def dead_zone_adjustment(self, value):
         """
         Analog sticks likely wont ever return to exact center when released. Without
         a dead zone, it is likely that a small axis value will cause game objects
-        to drift. This adjusment allows for a full range of input while still
+        to drift. This adjustment allows for a full range of input while still
         allowing a little bit of 'play' in the dead zone.
 
         Returns:
@@ -98,42 +86,6 @@ class Controller:
             return (value + self.dead_zone) / (1 - self.dead_zone)
         else:
             return 0
-
-    def get_buttons(self):
-        """
-        Gets the state of each button on the controller.
-
-        Returns:
-            A tuple with the state of each button. 1 is pressed, 0 is unpressed.
-        """
-
-        if platform == Platform.LINUX:
-            return (self.joystick.get_button(A),
-                    self.joystick.get_button(B),
-                    self.joystick.get_button(X),
-                    self.joystick.get_button(Y),
-                    self.joystick.get_button(LEFT_BUMP),
-                    self.joystick.get_button(RIGHT_BUMP),
-                    self.joystick.get_button(BACK),
-                    self.joystick.get_button(START),
-                    0,  # Unused, since Guide only works on Linux
-                    self.joystick.get_button(LEFT_STICK_BTN),
-                    self.joystick.get_button(RIGHT_STICK_BTN))
-
-        elif platform == Platform.WINDOWS:
-            return (self.joystick.get_button(A),
-                    self.joystick.get_button(B),
-                    self.joystick.get_button(X),
-                    self.joystick.get_button(Y),
-                    self.joystick.get_button(LEFT_BUMP),
-                    self.joystick.get_button(RIGHT_BUMP),
-                    self.joystick.get_button(BACK),
-                    self.joystick.get_button(START),
-                    self.joystick.get_button(LEFT_STICK_BTN),
-                    self.joystick.get_button(RIGHT_STICK_BTN),
-                    self.joystick.get_button(8),
-                    self.joystick.get_button(11),
-                    self.joystick.get_button(12))
 
     def get_left_stick(self):
         """
@@ -196,7 +148,7 @@ class Controller:
 
         trigger_axis = 0.0
 
-        if platform_id == LINUX or platform_id == MAC:
+        if platform == Platform.LINUX:
             left = self.joystick.get_axis(LEFT_TRIGGER)
             right = self.joystick.get_axis(RIGHT_TRIGGER)
 
@@ -215,23 +167,14 @@ class Controller:
         elif platform == Platform.WINDOWS:
             trigger_axis = -1 * self.joystick.get_axis(TRIGGERS)
 
-        return trigger_axis
+        return smoothOutput(trigger_axis)
 
-    def get_pad(self):
-        """
-        Gets the state of the directional pad.
 
-        Returns:
-            A tuple in the form (up, right, down, left) where each value will be
-            1 if pressed, 0 otherwise. Pads are 8-directional, so it is possible
-            to have up to two 1s in the returned tuple.
-        """
+def smoothOutput(input):
+    if input == MAX_POSITIVE_VALUE:
+        return 1
 
-        hat_x, hat_y = self.joystick.get_hat(0)
+    if input == MAX_NEGATIVE_VALUE:
+        return -1
 
-        up = int(hat_y == 1)
-        right = int(hat_x == 1)
-        down = int(hat_y == -1)
-        left = int(hat_x == -1)
-
-        return up, right, down, left
+    return round(input, 2)
